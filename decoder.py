@@ -27,6 +27,7 @@ np.set_printoptions(threshold=sys.maxsize)
 def generatePossibleCombinations(n):
     return list(itertools.product([0, 1], repeat=n))
 
+
 # Generates the qr code matrices
 def generateQRCodeMatrices(numberOfInputs, version, microBool, error, mask):
     possibleCombinationsList = generatePossibleCombinations(numberOfInputs)
@@ -38,16 +39,10 @@ def generateQRCodeMatrices(numberOfInputs, version, microBool, error, mask):
     string = ""
 
     qrMatrices = []
-    maskSetting = 0
-    # TODO: Clean up this for loop, there is definitely a more efficient way of calculating this
+
     for currentInput in inputList:
-        if microBool:
-            maskCapacity = 4
-        else:
-            maskCapacity = 8
-        if maskSetting == maskCapacity:
-            maskSetting = 0
-        # If not error or mask is given, use the Segno default values
+        # If not error or mask is given, use the Segno default values. Error == None is tested against as Micro QR code M1
+        # doesn't have error code capabilities
         if ((error == "" or error == None) and mask == ""):
             qrcode = segno.make(currentInput, micro=microBool,
                                 version=version)
@@ -67,15 +62,17 @@ def generateQRCodeMatrices(numberOfInputs, version, microBool, error, mask):
             qrcode = segno.make(currentInput, micro=microBool,
                                 version=version, error=error, mask=mask, boost_error=False)
 
+        # Uncomment this if you want to save each of the QR codes as images. You will need to fix the path
         # qrcode.save(
         #     f'qrcodes/{numberOfInputs}_input/{version}/QRCode_{currentInput}.png', scale=6, border=0)
+
         print("\nversion: ", version, "currentInput: ", currentInput, "error code: ",
               qrcode.error, "mask: ", qrcode.mask)
-        # print("currentInput: ", currentInput, "mask: ", qrcode.mask)
+
         qrMatrices.append(np.asarray(qrcode.matrix))
-        maskSetting += 1
 
     return qrMatrices
+
 
 # Generates truth tables using pixels from each qr matrix
 def generateTruthTablesFromQRMatrix(matrixList):
@@ -91,6 +88,7 @@ def generateTruthTablesFromQRMatrix(matrixList):
             truthTables.append(currentTruthTable)
             currentTruthTable = []
     return truthTables
+
 
 # Converts a binary string to a Boolean expression
 def decodeBinaryToBooleanExpression(truthString):
@@ -145,6 +143,7 @@ def convertTruthTableIntoBinaryValues(truthTables):
 
     return listOfBinaryValues
 
+
 def createHeatmap(binaryValues, boolDict, matrixSize):
     # Shape array into QR size
     array = np.array(binaryValues)
@@ -182,7 +181,7 @@ def decode(inputs, version, microBool, error, mask):
     # print("\n", len(boolDict))
 
     # Creates heatmap
-    # createHeatmap(binaryValues, boolDict, matrixSize)
+    createHeatmap(binaryValues, boolDict, matrixSize)
     return boolDict
 
 
